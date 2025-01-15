@@ -7,6 +7,9 @@ WORKDIR /app
 # Copiar os arquivos de código do projeto para o diretório de trabalho no container
 COPY . /app
 
+# Garantir que todos os arquivos e pastas tenham permissões de root
+RUN chown -R root:root /app
+
 # Instalar dependências
 RUN npm install
 
