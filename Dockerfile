@@ -10,8 +10,8 @@ COPY . /app
 # Garantir que todos os arquivos e pastas tenham permissões de root
 RUN chown -R root:root /app
 
-# Instalar dependências
-RUN npm install
+# Instalar dependências e garantir que o binário 'vite' tenha permissões de execução
+RUN npm install && chmod +x node_modules/.bin/vite
 
 # Expor a porta 80 para permitir acesso externo
 EXPOSE 80
