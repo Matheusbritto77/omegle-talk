@@ -14,4 +14,4 @@ RUN npm install
 EXPOSE 80
 
 # Definir o comando para rodar o servidor na porta 80
-CMD ["node", "server.js"]
+CMD ["npm", "run", "dev"]
