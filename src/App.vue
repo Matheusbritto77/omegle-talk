@@ -6,6 +6,7 @@ const loading = ref(false);
 const matchFound = ref(false);
 const uid = ref<string | null>(null);
 const socket = ref<WebSocket | null>(null);
+const inQueue = ref(false); // Controle para verificar se está na fila
 
 // Função para gerar um UID único
 const generateUID = (): string => {
@@ -15,6 +16,7 @@ const generateUID = (): string => {
 // Função para entrar na fila e aguardar a correspondência
 const joinQueue = () => {
   loading.value = true;
+  inQueue.value = true;
   uid.value = generateUID();  // Gerar o UID único para o usuário
   console.log(`User UID: ${uid.value}`);
   
@@ -26,9 +28,16 @@ const joinQueue = () => {
   }, 3000);  // Tempo simulado para encontrar um usuário (3 segundos)
 };
 
+// Função para sair da fila
+const leaveQueue = () => {
+  loading.value = false;
+  inQueue.value = false;
+  matchFound.value = false;
+  console.log('User left the queue');
+};
+
 // Função para iniciar a comunicação via WebSocket
 const initiateWebSocket = () => {
-  // Verificar se `uid.value` não é null
   if (!uid.value) {
     console.error('UID não disponível.');
     return;
@@ -44,7 +53,6 @@ const initiateWebSocket = () => {
 
   socket.value.onmessage = (event) => {
     console.log('Message from WebSocket:', event.data);
-    // Lógica para a comunicação de vídeo
   };
 
   socket.value.onerror = (error) => {
@@ -59,17 +67,24 @@ const initiateWebSocket = () => {
 
 <template>
   <div class="container">
-    <button @click="joinQueue" :disabled="loading.value" class="start-button">
+    <!-- Botão para Iniciar Meet -->
+    <button v-if="!inQueue.value" @click="joinQueue" :disabled="loading.value" class="start-button">
       Iniciar Meet
     </button>
 
+    <!-- Botão para Sair da fila -->
+    <button v-if="inQueue.value" @click="leaveQueue" class="leave-button">
+      Sair da fila
+    </button>
+
+    <!-- Spinner de Carregamento -->
     <div v-if="loading.value" class="loading-spinner">
       <span class="spinner"></span> Carregando...
     </div>
 
+    <!-- Mensagem e Imagem quando o Match for Encontrado -->
     <div v-if="matchFound.value" class="meet-ready">
       <p>Match encontrado! Conectando via WebSocket...</p>
-      <!-- Imagem da chamada de vídeo -->
       <img src="https://via.placeholder.com/150" alt="Vídeo chamada" class="video-call-image" />
     </div>
   </div>
@@ -81,7 +96,7 @@ const initiateWebSocket = () => {
   padding: 20px;
 }
 
-.start-button {
+.start-button, .leave-button {
   padding: 10px 20px;
   font-size: 16px;
   background-color: #42b883;
@@ -98,6 +113,15 @@ const initiateWebSocket = () => {
 
 .start-button:hover {
   background-color: #358c68;
+}
+
+.leave-button {
+  background-color: #ff4757;
+  margin-top: 10px;
+}
+
+.leave-button:hover {
+  background-color: #e84118;
 }
 
 .loading-spinner {
